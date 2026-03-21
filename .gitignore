@@ -1,0 +1,22 @@
+# Binaries
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Build
+/build/
+/dist/
+
+# Logs & Config
+/LOCALAPPDATA/fyne-tray-app/
+*.log
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Go
+go.work
+go.work.sum

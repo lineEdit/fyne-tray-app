@@ -1,0 +1,12 @@
+app:
+  ID: com.example.trayapp
+  Name: Tray App
+  Icon: resources/icons/icon-on.ico
+
+build:
+  windows:
+    console: false
+    version: 1.0.0
+    metadata:
+      CompanyName: Example Corp
+      ProductName: Tray App
