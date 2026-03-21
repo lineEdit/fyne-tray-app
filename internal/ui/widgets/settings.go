@@ -2,6 +2,8 @@ package widgets
 
 import (
 	"fyne-tray-app/internal/config"
+	"fyne-tray-app/internal/utils"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
@@ -25,7 +27,8 @@ func NewSettingsWidget(cfg *config.Config) *SettingsWidget {
 }
 
 func (w *SettingsWidget) CreateRenderer() fyne.WidgetRenderer {
-	w.toggleBtn = widget.NewButton("Настройки ⌄", w.toggleExpand)
+	loc := utils.GetLocale()
+	w.toggleBtn = widget.NewButton(loc.Get("settings.title")+" ⌄", w.toggleExpand)
 	w.content = w.createSettingsContent()
 	w.content.Hidden = true
 
@@ -34,12 +37,13 @@ func (w *SettingsWidget) CreateRenderer() fyne.WidgetRenderer {
 }
 
 func (w *SettingsWidget) toggleExpand() {
+	loc := utils.GetLocale()
 	w.expanded = !w.expanded
 	if w.expanded {
-		w.toggleBtn.SetText("Настройки ⌃")
+		w.toggleBtn.SetText(loc.Get("settings.title") + " ⌃")
 		w.content.Hidden = false
 	} else {
-		w.toggleBtn.SetText("Настройки ⌄")
+		w.toggleBtn.SetText(loc.Get("settings.title") + " ⌄")
 		w.content.Hidden = true
 	}
 	w.content.Refresh()
@@ -53,44 +57,51 @@ func (w *SettingsWidget) Expand() {
 }
 
 func (w *SettingsWidget) createSettingsContent() *fyne.Container {
-	autoStart := widget.NewCheck("Автозапуск", func(checked bool) {
+	loc := utils.GetLocale()
+
+	autoStart := widget.NewCheck(loc.Get("settings.auto_start"), func(checked bool) {
 		w.cfg.AutoStart = checked
 		_ = w.cfg.Save()
 	})
 	autoStart.Checked = w.cfg.AutoStart
 
-	checkUpdates := widget.NewCheck("Проверять обновления", func(checked bool) {
+	checkUpdates := widget.NewCheck(loc.Get("settings.check_updates"), func(checked bool) {
 		w.cfg.CheckUpdates = checked
 		_ = w.cfg.Save()
 	})
 	checkUpdates.Checked = w.cfg.CheckUpdates
 
-	lang := widget.NewSelect([]string{"Русский", "English"}, func(value string) {
-		if value == "Русский" {
+	lang := widget.NewSelect([]string{
+		loc.Get("settings.language.ru"),
+		loc.Get("settings.language.en"),
+	}, func(value string) {
+		if value == loc.Get("settings.language.ru") {
 			w.cfg.Language = "ru-RU"
+			_ = utils.GetLocale().SetLocale("ru-RU")
 		} else {
 			w.cfg.Language = "en-US"
+			_ = utils.GetLocale().SetLocale("en-US")
 		}
 		_ = w.cfg.Save()
 	})
 	if w.cfg.Language == "ru-RU" {
-		lang.SetSelected("Русский")
+		lang.SetSelected(loc.Get("settings.language.ru"))
 	} else {
-		lang.SetSelected("English")
+		lang.SetSelected(loc.Get("settings.language.en"))
 	}
 
-	saveBtn := widget.NewButton("Применить", func() {
+	saveBtn := widget.NewButton(loc.Get("settings.btn.save"), func() {
 		_ = w.cfg.Save()
 		fyne.CurrentApp().SendNotification(&fyne.Notification{
-			Title:   "Настройки",
-			Content: "Сохранено",
+			Title:   loc.Get("settings.notification.title"),
+			Content: loc.Get("settings.notification.saved"),
 		})
 	})
 
 	return container.NewPadded(container.NewVBox(
 		autoStart,
 		checkUpdates,
-		container.NewHBox(widget.NewLabel("Язык:"), lang),
+		container.NewHBox(widget.NewLabel(loc.Get("settings.language")+":"), lang),
 		container.NewCenter(saveBtn),
 	))
 }

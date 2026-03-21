@@ -2,11 +2,13 @@ package widgets
 
 import (
 	"fyne-tray-app/internal/config"
+	"fyne-tray-app/internal/utils"
+	"image/color"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
-	"image/color"
 )
 
 type StatusWidget struct {
@@ -27,10 +29,12 @@ func NewStatusWidget(cfg *config.Config) *StatusWidget {
 }
 
 func (w *StatusWidget) CreateRenderer() fyne.WidgetRenderer {
+	loc := utils.GetLocale()
+
 	content := container.NewHBox(
 		w.icon,
 		container.NewVBox(
-			widget.NewLabelWithStyle("Статус приложения", fyne.TextAlignLeading, fyne.TextStyle{Bold: true}),
+			widget.NewLabelWithStyle(loc.Get("status.label"), fyne.TextAlignLeading, fyne.TextStyle{Bold: true}),
 			w.label,
 		),
 	)
@@ -38,7 +42,17 @@ func (w *StatusWidget) CreateRenderer() fyne.WidgetRenderer {
 }
 
 func (w *StatusWidget) SetStatus(status string, active bool) {
-	w.label.SetText("Статус: " + status)
+	loc := utils.GetLocale()
+
+	if status == "" {
+		if active {
+			status = loc.Get("status.active")
+		} else {
+			status = loc.Get("status.inactive")
+		}
+	}
+	w.label.SetText(loc.Get("status.label") + ": " + status)
+
 	if active {
 		w.icon.FillColor = color.RGBA{R: 76, G: 175, B: 80, A: 255} // Зелёный
 	} else {

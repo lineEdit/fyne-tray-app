@@ -12,6 +12,8 @@ func main() {
 		log.Fatalf("Failed to init logger: %v", err)
 	}
 
+	log.Println("🚀 Starting Tray App...")
+
 	// Запуск приложения
 	application := app.New()
 	if err := application.Run(); err != nil {
