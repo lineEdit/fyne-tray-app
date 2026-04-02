@@ -1,6 +1,7 @@
 {
   "app.name": "Tray App",
   "app.version": "v1.0.0",
+  "language_name": "Русский",
 
   "tray.title": "Tray App",
   "tray.tooltip": "Кликните для меню",
@@ -20,8 +21,6 @@
   "settings.auto_start": "Автозапуск",
   "settings.check_updates": "Проверять обновления",
   "settings.language": "Язык",
-  "settings.language.ru": "Русский",
-  "settings.language.en": "English",
   "settings.log_level": "Уровень логирования",
   "settings.btn.save": "Применить",
   "settings.notification.title": "Настройки",
@@ -30,5 +29,13 @@
   "notify.update.available": "Доступно обновление",
   "notify.update.ready": "Обновление готово к установке",
   "notify.error.title": "Ошибка",
-  "notify.error.message": "Произошла ошибка"
+  "notify.error.message": "Произошла ошибка",
+
+  "settings.window.title": "Настройки",
+  "settings.menu": "Настройки",
+  "settings.language.restart_required": "Для применения языка требуется перезапуск приложения",
+  "settings.btn.reset": "Сбросить",
+  "settings.btn.close": "Закрыть",
+  "settings.reset.confirm": "Вы уверены, что хотите сбросить все настройки к значениям по умолчанию?",
+  "settings.notification.reset": "Настройки сброшены"
 }

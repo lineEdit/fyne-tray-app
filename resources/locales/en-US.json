@@ -1,6 +1,7 @@
 {
   "app.name": "Tray App",
   "app.version": "v1.0.0",
+  "language_name": "English",
 
   "tray.title": "Tray App",
   "tray.tooltip": "Click for menu",
@@ -20,8 +21,6 @@
   "settings.auto_start": "Auto start",
   "settings.check_updates": "Check for updates",
   "settings.language": "Language",
-  "settings.language.ru": "Русский",
-  "settings.language.en": "English",
   "settings.log_level": "Log level",
   "settings.btn.save": "Apply",
   "settings.notification.title": "Settings",
@@ -30,5 +29,13 @@
   "notify.update.available": "Update available",
   "notify.update.ready": "Update ready to install",
   "notify.error.title": "Error",
-  "notify.error.message": "An error occurred"
+  "notify.error.message": "An error occurred",
+
+  "settings.window.title": "Settings",
+  "settings.menu": "Settings",
+  "settings.language.restart_required": "Application restart required to apply language",
+  "settings.btn.reset": "Reset",
+  "settings.btn.close": "Close",
+  "settings.reset.confirm": "Are you sure you want to reset all settings to default?",
+  "settings.notification.reset": "Settings reset"
 }

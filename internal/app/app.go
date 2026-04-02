@@ -47,18 +47,25 @@ func New() *Application {
 func (a *Application) Run() error {
 	log.Println("🪟 [1/7] Creating main window...")
 	a.mainWindow = ui.CreateMainWindow(a.fyneApp, a.cfg)
-	log.Println("🪟 [2/7] Window created") // ← Появляется этот лог?
+	log.Println("🪟 [2/7] Window created")
 
 	log.Println("🔒 [3/7] Setting close intercept...")
 	a.mainWindow.SetCloseIntercept(func() {
 		log.Println("🪟 Window close intercepted - hiding")
 		a.mainWindow.Hide()
 	})
-	log.Println("🔒 [4/7] Close intercept set") // ← Появляется?
+	log.Println("🔒 [4/7] Close intercept set")
 
 	log.Println("🔌 [5/7] Creating tray manager...")
 	a.trayMgr = tray.NewManager(a.mainWindow, a.cfg)
-	log.Println("🔌 [6/7] Tray manager created") // ← Появляется? ЭТОГО НЕТ В ВАШИХ ЛОГАХ!
+
+	// ✅ Устанавливаем callback для открытия окна настроек
+	a.trayMgr.SetOnSettingsCallback(func() {
+		log.Println("⚙️ Opening settings window from tray")
+		ui.ShowSettingsWindow(a.fyneApp, a.cfg, a.mainWindow)
+	})
+
+	log.Println("🔌 [6/7] Tray manager created")
 
 	var ready sync.WaitGroup
 	ready.Add(1)
@@ -66,10 +73,13 @@ func (a *Application) Run() error {
 	log.Println("🚀 [7/7] Starting systray goroutine...")
 	go func() {
 		log.Println("🔌 Goroutine: calling RunWithReady...")
-		a.trayMgr.RunWithReady(func() {
+		err := a.trayMgr.RunWithReady(func() {
 			log.Println("✅ systray ready callback fired")
 			ready.Done()
 		})
+		if err != nil {
+			return
+		}
 	}()
 
 	log.Println("⏳ Waiting for systray ready...")

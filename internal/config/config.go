@@ -10,7 +10,7 @@ import (
 
 // Config хранит настройки приложения
 type Config struct {
-	mu sync.RWMutex `json:"-"`
+	Mu sync.RWMutex `json:"-"`
 
 	AutoStart    bool   `json:"auto_start"`
 	CheckUpdates bool   `json:"check_updates"`
@@ -18,14 +18,15 @@ type Config struct {
 	LogLevel     string `json:"log_level"`
 
 	WindowPosition struct {
-		X, Y int `json:"x,y"`
+		X int `json:"x"`
+		Y int `json:"y"`
 	} `json:"window_position"`
 
-	configPath string `json:"-"`
+	ConfigPath string `json:"-"`
 
 	// ✅ Флаги для отслеживания изменений
-	loaded bool `json:"-"`
-	dirty  bool `json:"-"` // Нужно ли сохранять
+	Loaded bool `json:"-"`
+	Dirty  bool `json:"-"` // Нужно ли сохранять
 }
 
 var (
@@ -35,18 +36,18 @@ var (
 
 // markDirty помечает конфиг как изменённый
 func (c *Config) markDirty() {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	c.dirty = true
+	c.Mu.Lock()
+	defer c.Mu.Unlock()
+	c.Dirty = true
 }
 
 // Get возвращает глобальный экземпляр конфигурации
-func Get() *Config {
-	once.Do(func() {
-		instance = Load()
-	})
-	return instance
-}
+//func Get() *Config {
+//	once.Do(func() {
+//		instance = Load()
+//	})
+//	return instance
+//}
 
 // Default возвращает конфигурацию по умолчанию
 func Default() *Config {
@@ -88,7 +89,7 @@ func Load() *Config {
 		log.Printf("⚠️ Failed to get config path: %v", err)
 		return cfg
 	}
-	cfg.configPath = configPath
+	cfg.ConfigPath = configPath
 
 	// Проверяем, существует ли файл
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
@@ -118,28 +119,28 @@ func Load() *Config {
 
 // Save сохраняет только если есть изменения
 func (c *Config) Save() error {
-	c.mu.RLock()
-	if !c.dirty && c.loaded {
-		c.mu.RUnlock()
+	c.Mu.RLock()
+	if !c.Dirty && c.Loaded {
+		c.Mu.RUnlock()
 		return nil // Нет изменений — не сохраняем
 	}
 	// Снимаем read-lock, берём write-lock
-	c.mu.RUnlock()
+	c.Mu.RUnlock()
 
-	c.mu.Lock()
-	defer c.mu.Unlock()
+	c.Mu.Lock()
+	defer c.Mu.Unlock()
 
 	// Если путь не установлен — получаем его
-	if c.configPath == "" {
+	if c.ConfigPath == "" {
 		path, err := getConfigPath()
 		if err != nil {
 			return err
 		}
-		c.configPath = path
+		c.ConfigPath = path
 	}
 
 	// Создаём директорию
-	dir := filepath.Dir(c.configPath)
+	dir := filepath.Dir(c.ConfigPath)
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return err
 	}
@@ -150,26 +151,26 @@ func (c *Config) Save() error {
 		return err
 	}
 
-	if err := os.WriteFile(c.configPath, data, 0644); err != nil {
+	if err := os.WriteFile(c.ConfigPath, data, 0644); err != nil {
 		return err
 	}
 
 	// ✅ Сбрасываем флаг после успешного сохранения
-	c.dirty = false
-	c.loaded = true
+	c.Dirty = false
+	c.Loaded = true
 
-	log.Printf("💾 Config saved: %s", c.configPath)
+	log.Printf("💾 Config saved: %s", c.ConfigPath)
 	return nil
 }
 
 // SetLanguage с пометкой изменения
 func (c *Config) SetLanguage(lang string) bool {
-	c.mu.Lock()
-	defer c.mu.Unlock()
+	c.Mu.Lock()
+	defer c.Mu.Unlock()
 
 	if lang != c.Language {
 		c.Language = lang
-		c.dirty = true // ✅ Помечаем как изменённый
+		c.Dirty = true // ✅ Помечаем как изменённый
 		log.Printf("🌐 Language changed: %s", lang)
 		return true
 	}
@@ -178,47 +179,75 @@ func (c *Config) SetLanguage(lang string) bool {
 
 // GetLanguage безопасно возвращает текущий язык
 func (c *Config) GetLanguage() string {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
+	c.Mu.RLock()
+	defer c.Mu.RUnlock()
 	return c.Language
 }
 
 // Reload перечитывает конфиг с диска (если изменился извне)
 func (c *Config) Reload() error {
-	if c.configPath == "" {
+	if c.ConfigPath == "" {
 		return nil
 	}
 
-	data, err := os.ReadFile(c.configPath)
+	data, err := os.ReadFile(c.ConfigPath)
 	if err != nil {
 		return err
 	}
 
-	c.mu.Lock()
-	defer c.mu.Unlock()
+	c.Mu.Lock()
+	defer c.Mu.Unlock()
 
 	return json.Unmarshal(data, c)
 }
 
 // Аналогично для других полей:
 func (c *Config) SetAutoStart(val bool) bool {
-	c.mu.Lock()
-	defer c.mu.Unlock()
+	c.Mu.Lock()
+	defer c.Mu.Unlock()
 	if val != c.AutoStart {
 		c.AutoStart = val
-		c.dirty = true
+		c.Dirty = true
 		return true
 	}
 	return false
 }
 
 func (c *Config) SetCheckUpdates(val bool) bool {
-	c.mu.Lock()
-	defer c.mu.Unlock()
+	c.Mu.Lock()
+	defer c.Mu.Unlock()
 	if val != c.CheckUpdates {
 		c.CheckUpdates = val
-		c.dirty = true
+		c.Dirty = true
 		return true
 	}
 	return false
+}
+
+// SetLogLevel устанавливает уровень логирования
+func (c *Config) SetLogLevel(level string) bool {
+	c.Mu.Lock()
+	defer c.Mu.Unlock()
+
+	validLevels := map[string]bool{
+		"debug": true,
+		"info":  true,
+		"warn":  true,
+		"error": true,
+	}
+
+	if validLevels[level] && level != c.LogLevel {
+		c.LogLevel = level
+		c.Dirty = true
+		log.Printf("📝 LogLevel changed: %s", level)
+		return true
+	}
+	return false
+}
+
+// GetLogLevel безопасно возвращает уровень логирования
+func (c *Config) GetLogLevel() string {
+	c.Mu.RLock()
+	defer c.Mu.RUnlock()
+	return c.LogLevel
 }

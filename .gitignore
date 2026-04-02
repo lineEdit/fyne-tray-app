@@ -10,6 +10,11 @@ go.work.sum
 /build/
 /dist/
 
+# ===== Config & Data =====
+config.json
+*.log
+/LOCALAPPDATA/
+
 # ===== IDE =====
 .idea/
 .vscode/
@@ -17,18 +22,9 @@ go.work.sum
 *.swo
 *~
 
-# ===== Local data =====
-/LOCALAPPDATA/
-*.log
-config.json
-
 # ===== OS =====
 .DS_Store
 Thumbs.db
 
 # ===== Fyne (опционально) =====
 # fyne.yaml  # Оставьте, если используете fyne package
-
-# ===== Локализация =====
-# Файлы локалей должны быть в репозитории, но не компилироваться
-# !resources/locales/*.json
