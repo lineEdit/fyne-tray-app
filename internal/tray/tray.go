@@ -87,6 +87,11 @@ func (m *Manager) ready(onReady func()) {
 				})
 			case <-m.menuQuit.ClickedCh:
 				log.Println("👋 Quit clicked")
+
+				// ✅ 1. Закрываем Fyne приложение (главный event loop)
+				fyne.CurrentApp().Quit()
+
+				// ✅ 2. Закрываем трей
 				systray.Quit()
 				return
 			}
