@@ -29,10 +29,10 @@ type Config struct {
 	Dirty  bool `json:"-"` // Нужно ли сохранять
 }
 
-var (
-	instance *Config
-	once     sync.Once
-)
+//var (
+//	instance *Config
+//	once     sync.Once
+//)
 
 // markDirty помечает конфиг как изменённый
 func (c *Config) markDirty() {
