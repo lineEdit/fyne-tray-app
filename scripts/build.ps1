@@ -6,6 +6,8 @@
 $APP_NAME = "TrayApp"
 $CMD_PATH = "./cmd/app"
 $OUTPUT_DIR = "./build/windows"
+$localesSrc = "resources/locales"
+$localesDst = "$OUTPUT_DIR/resources/locales"
 
 # ===== Проверка окружения =====
 if (!(Get-Command go -ErrorAction SilentlyContinue)) {
@@ -13,45 +15,19 @@ if (!(Get-Command go -ErrorAction SilentlyContinue)) {
     exit 1
 }
 
-# ===== Генерация ресурсов =====
-$iconSrc = "resources/icons/Icon-on.ico"
-$iconDst = "internal/resources/icons/icons.go"
-$localesSrc = "resources/locales"
-$localesDst = "$OUTPUT_DIR/resources/locales"
-
-if (Test-Path $iconSrc) {
-    $dstDir = Split-Path $iconDst -Parent
-    if (!(Test-Path $dstDir)) {
-        New-Item -ItemType Directory -Force -Path $dstDir | Out-Null
-    }
-
-    if (!(Test-Path $iconDst) -or $Force) {
-        Write-Host "📦 Generating icon resources..." -ForegroundColor Cyan
-        go run fyne.io/tools/cmd/fyne@latest bundle -o $iconDst -package icons $iconSrc
-        if ($LASTEXITCODE -ne 0) {
-            Write-Host "❌ Failed to generate icon resources" -ForegroundColor Red
-            exit 1
-        }
-        Write-Host "✅ Icon resources generated" -ForegroundColor Green
-    }
-} else {
-    Write-Host "⚠️ Icon not found: $iconSrc" -ForegroundColor Yellow
-}
-
 Write-Host "🔨 Build: $Action" -ForegroundColor Cyan
 $env:CGO_ENABLED = "1"
 
-# ===== Действия =====
 switch ($Action) {
     'release' {
         if (!(Test-Path $OUTPUT_DIR)) {
             New-Item -ItemType Directory -Path $OUTPUT_DIR | Out-Null
         }
 
-        # Копируем локали для релиза
+        # Копируем локали
         if (Test-Path $localesSrc) {
             Copy-Item -Path $localesSrc -Destination $localesDst -Recurse -Force
-            Write-Host "📦 Locales copied to $localesDst" -ForegroundColor Gray
+            Write-Host "📦 Locales copied" -ForegroundColor Gray
         }
 
         Write-Host "🚀 Building release..." -ForegroundColor Cyan
@@ -63,10 +39,8 @@ switch ($Action) {
             New-Item -ItemType Directory -Path $OUTPUT_DIR | Out-Null
         }
 
-        # Копируем локали для dev
         if (Test-Path $localesSrc) {
-            Copy-Item -Path $localesSrc -Destination $localesDst -Recurse -Force
-            Write-Host "📦 Locales copied to $localesDst" -ForegroundColor Gray
+            Copy-Item -Path $localesSrc -Destination $localesDst -Recurse -Force -ErrorAction SilentlyContinue
         }
 
         Write-Host "🔧 Building dev..." -ForegroundColor Cyan
@@ -93,7 +67,6 @@ switch ($Action) {
     }
 }
 
-# ===== Финальная проверка =====
 if ($LASTEXITCODE -eq 0) {
     Write-Host "✅ Done" -ForegroundColor Green
 } else {

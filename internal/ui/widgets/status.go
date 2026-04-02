@@ -1,3 +1,4 @@
+// internal/ui/widgets/status.go
 package widgets
 
 import (
@@ -19,12 +20,18 @@ type StatusWidget struct {
 }
 
 func NewStatusWidget(cfg *config.Config) *StatusWidget {
+	loc := utils.GetLocale()
+
 	w := &StatusWidget{
 		cfg:   cfg,
-		label: widget.NewLabel("Статус: Активно"),
-		icon:  canvas.NewCircle(color.RGBA{R: 76, G: 175, B: 80, A: 255}), // Зелёный
+		label: widget.NewLabel(loc.Get("status.label") + ": " + loc.Get("status.active")),
+		icon:  canvas.NewCircle(color.RGBA{R: 76, G: 175, B: 80, A: 255}),
 	}
 	w.ExtendBaseWidget(w)
+
+	// ✅ НЕ запускайте горутины здесь!
+	// Если нужно обновление — делайте это через Refresh() по событию
+
 	return w
 }
 
@@ -41,6 +48,7 @@ func (w *StatusWidget) CreateRenderer() fyne.WidgetRenderer {
 	return widget.NewSimpleRenderer(content)
 }
 
+// SetStatus обновляет статус (вызывайте из основного потока Fyne)
 func (w *StatusWidget) SetStatus(status string, active bool) {
 	loc := utils.GetLocale()
 
@@ -54,9 +62,9 @@ func (w *StatusWidget) SetStatus(status string, active bool) {
 	w.label.SetText(loc.Get("status.label") + ": " + status)
 
 	if active {
-		w.icon.FillColor = color.RGBA{R: 76, G: 175, B: 80, A: 255} // Зелёный
+		w.icon.FillColor = color.RGBA{R: 76, G: 175, B: 80, A: 255}
 	} else {
-		w.icon.FillColor = color.RGBA{R: 255, G: 152, B: 0, A: 255} // Оранжевый
+		w.icon.FillColor = color.RGBA{R: 255, G: 152, B: 0, A: 255}
 	}
 	w.icon.Refresh()
 	w.Refresh()

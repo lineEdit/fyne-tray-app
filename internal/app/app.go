@@ -21,60 +21,91 @@ type Application struct {
 }
 
 func New() *Application {
+	// 1. Создаём приложение Fyne
 	fyneApp := app.NewWithID("com.example.trayapp")
 
-	// Инициализация локализации
+	// 2. ✅ Загружаем конфиг ПЕРВЫМ (создаст дефолтный рядом с exe, если нет)
+	// Используем config.Load() напрямую, а не синглтон, для явного контроля
+	cfg := config.Load()
+
+	// 3. ✅ Применяем язык из конфига к локализации ДО создания окна
 	loc := utils.GetLocale()
-	if cfg := config.Load(); cfg.Language != "" {
-		_ = loc.SetLocale(cfg.Language)
+	if cfg.Language != "" {
+		if err := loc.SetLocale(cfg.Language); err != nil {
+			log.Printf("⚠️ Failed to set locale %s: %v", cfg.Language, err)
+		} else {
+			log.Printf("🌐 Locale applied: %s", cfg.Language)
+		}
 	}
 
 	return &Application{
 		fyneApp: fyneApp,
-		cfg:     config.Load(),
+		cfg:     cfg, // Сохраняем ссылку на тот же экземпляр конфига
 	}
 }
 
 func (a *Application) Run() error {
-	log.Println("🪟 Creating main window...")
-
-	// 1. Создаём окно
+	log.Println("🪟 [1/7] Creating main window...")
 	a.mainWindow = ui.CreateMainWindow(a.fyneApp, a.cfg)
+	log.Println("🪟 [2/7] Window created") // ← Появляется этот лог?
 
-	// 2. Перехват закрытия: скрывать, а не закрывать
+	log.Println("🔒 [3/7] Setting close intercept...")
 	a.mainWindow.SetCloseIntercept(func() {
 		log.Println("🪟 Window close intercepted - hiding")
 		a.mainWindow.Hide()
 	})
+	log.Println("🔒 [4/7] Close intercept set") // ← Появляется?
 
-	// 3. Инициализируем трей
+	log.Println("🔌 [5/7] Creating tray manager...")
 	a.trayMgr = tray.NewManager(a.mainWindow, a.cfg)
+	log.Println("🔌 [6/7] Tray manager created") // ← Появляется? ЭТОГО НЕТ В ВАШИХ ЛОГАХ!
 
-	// 4. Синхронизация: ждём инициализации systray
 	var ready sync.WaitGroup
 	ready.Add(1)
 
-	// 5. ✅ Запускаем systray в ГОРУТИНЕ (не блокирует главный поток)
+	log.Println("🚀 [7/7] Starting systray goroutine...")
 	go func() {
-		log.Println("🔌 Starting systray in goroutine...")
-		err := a.trayMgr.RunWithReady(func() {
-			// Callback: systray готов
+		log.Println("🔌 Goroutine: calling RunWithReady...")
+		a.trayMgr.RunWithReady(func() {
+			log.Println("✅ systray ready callback fired")
 			ready.Done()
-			log.Println("✅ systray initialized")
 		})
-		if err != nil {
-			log.Println(err)
-			return
-		}
 	}()
 
-	// 6. Ждём, пока systray инициализируется
+	log.Println("⏳ Waiting for systray ready...")
 	ready.Wait()
 	log.Println("🚀 systray ready, starting Fyne event loop...")
 
-	// 7. ✅ Запускаем Fyne event loop в ГЛАВНОМ потоке
-	// Это критично для отрисовки окон!
 	a.fyneApp.Run()
+
+	return nil
+}
+
+// GetConfig возвращает текущую конфигурацию (для внешнего доступа)
+func (a *Application) GetConfig() *config.Config {
+	return a.cfg
+}
+
+// ReloadConfig перечитывает конфиг с диска (если изменился извне)
+func (a *Application) ReloadConfig() error {
+	if a.cfg == nil {
+		return nil
+	}
+
+	oldLang := a.cfg.GetLanguage()
+
+	if err := a.cfg.Reload(); err != nil {
+		return err
+	}
+
+	// Если язык изменился — применяем к локализации
+	newLang := a.cfg.GetLanguage()
+	if newLang != "" && newLang != oldLang {
+		log.Printf("🌐 Language changed via config reload: %s → %s", oldLang, newLang)
+		if err := utils.GetLocale().SetLocale(newLang); err != nil {
+			log.Printf("⚠️ Failed to apply new locale: %v", err)
+		}
+	}
 
 	return nil
 }

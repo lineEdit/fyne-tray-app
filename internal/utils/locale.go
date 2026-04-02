@@ -3,6 +3,8 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
+	"fyne-tray-app/internal/config"
+	"log"
 	"os"
 	"path/filepath"
 	"sync"
@@ -20,21 +22,35 @@ var localeInstance *LocaleManager
 var localeOnce sync.Once
 
 // GetLocale возвращает глобальный экземпляр LocaleManager
+//func GetLocale() *LocaleManager {
+//	localeOnce.Do(func() {
+//		localeInstance = &LocaleManager{
+//			locale:   "ru-RU",
+//			messages: make(map[string]string),
+//			fallback: make(map[string]string),
+//		}
+//		// Загружаем fallback (английский)
+//		_ = localeInstance.loadLocale("en-US")
+//		localeInstance.fallback = make(map[string]string)
+//		for k, v := range localeInstance.messages {
+//			localeInstance.fallback[k] = v
+//		}
+//		// Загружаем основную локаль
+//		_ = localeInstance.loadLocale("ru-RU")
+//	})
+//	return localeInstance
+//}
+
 func GetLocale() *LocaleManager {
 	localeOnce.Do(func() {
+		// ✅ Это должно выполняться быстро
 		localeInstance = &LocaleManager{
 			locale:   "ru-RU",
 			messages: make(map[string]string),
 			fallback: make(map[string]string),
 		}
-		// Загружаем fallback (английский)
 		_ = localeInstance.loadLocale("en-US")
-		localeInstance.fallback = make(map[string]string)
-		for k, v := range localeInstance.messages {
-			localeInstance.fallback[k] = v
-		}
-		// Загружаем основную локаль
-		_ = localeInstance.loadLocale("ru-RU")
+		// ...
 	})
 	return localeInstance
 }
@@ -123,4 +139,32 @@ func (lm *LocaleManager) GetLocale() string {
 // AvailableLocales возвращает список доступных локалей
 func AvailableLocales() []string {
 	return []string{"ru-RU", "en-US"}
+}
+
+// ApplyConfig применяет настройки из конфига к локализации
+func (lm *LocaleManager) ApplyConfig(cfg *config.Config) error {
+	if cfg == nil {
+		return nil
+	}
+
+	lang := cfg.GetLanguage()
+	if lang != "" && lang != lm.GetLocale() {
+		log.Printf("🌐 Applying language from config: %s", lang)
+		return lm.SetLocale(lang)
+	}
+	return nil
+}
+
+// OnLanguageChanged вызывается при смене языка в настройках
+func (lm *LocaleManager) OnLanguageChanged(newLang string) error {
+	if err := lm.SetLocale(newLang); err != nil {
+		return err
+	}
+
+	// Обновляем конфиг
+	if cfg := config.Get(); cfg != nil {
+		cfg.SetLanguage(newLang)
+		return cfg.Save()
+	}
+	return nil
 }

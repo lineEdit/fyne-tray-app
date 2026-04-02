@@ -1,0 +1,34 @@
+{
+  "app.name": "Tray App",
+  "app.version": "v1.0.0",
+
+  "tray.title": "Tray App",
+  "tray.tooltip": "Кликните для меню",
+  "tray.menu.show": "Показать окно",
+  "tray.menu.exit": "Выход",
+
+  "window.title": "Tray App",
+  "window.btn.hide": "Скрыть",
+  "window.btn.settings": "Настройки",
+
+  "status.label": "Статус приложения",
+  "status.active": "Активно",
+  "status.inactive": "Неактивно",
+  "status.unknown": "Неизвестно",
+
+  "settings.title": "Настройки",
+  "settings.auto_start": "Автозапуск",
+  "settings.check_updates": "Проверять обновления",
+  "settings.language": "Язык",
+  "settings.language.ru": "Русский",
+  "settings.language.en": "English",
+  "settings.log_level": "Уровень логирования",
+  "settings.btn.save": "Применить",
+  "settings.notification.title": "Настройки",
+  "settings.notification.saved": "Сохранено",
+
+  "notify.update.available": "Доступно обновление",
+  "notify.update.ready": "Обновление готово к установке",
+  "notify.error.title": "Ошибка",
+  "notify.error.message": "Произошла ошибка"
+}

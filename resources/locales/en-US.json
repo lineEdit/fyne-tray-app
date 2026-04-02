@@ -1,0 +1,34 @@
+{
+  "app.name": "Tray App",
+  "app.version": "v1.0.0",
+
+  "tray.title": "Tray App",
+  "tray.tooltip": "Click for menu",
+  "tray.menu.show": "Show window",
+  "tray.menu.exit": "Exit",
+
+  "window.title": "Tray App",
+  "window.btn.hide": "Hide",
+  "window.btn.settings": "Settings",
+
+  "status.label": "Application status",
+  "status.active": "Active",
+  "status.inactive": "Inactive",
+  "status.unknown": "Unknown",
+
+  "settings.title": "Settings",
+  "settings.auto_start": "Auto start",
+  "settings.check_updates": "Check for updates",
+  "settings.language": "Language",
+  "settings.language.ru": "Русский",
+  "settings.language.en": "English",
+  "settings.log_level": "Log level",
+  "settings.btn.save": "Apply",
+  "settings.notification.title": "Settings",
+  "settings.notification.saved": "Saved",
+
+  "notify.update.available": "Update available",
+  "notify.update.ready": "Update ready to install",
+  "notify.error.title": "Error",
+  "notify.error.message": "An error occurred"
+}

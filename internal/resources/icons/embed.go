@@ -7,11 +7,11 @@ import (
 	"fyne.io/fyne/v2"
 )
 
-//go:embed Icon-on.ico
-var iconOnIcoData []byte
+//go:embed icon-on.ico
+var iconData []byte
 
-// ResourceIconOnIco — экспортированная иконка для использования в других пакетах.
+// ResourceIconOnIco — экспортированная иконка для системного трея
 var ResourceIconOnIco = &fyne.StaticResource{
 	StaticName:    "icon-on.ico",
-	StaticContent: iconOnIcoData,
+	StaticContent: iconData,
 }
