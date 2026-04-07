@@ -1,27 +1,30 @@
 // internal/ui/settings_window.go
-
 package ui
 
 import (
 	"fyne-tray-app/internal/config"
 	"fyne-tray-app/internal/utils"
-	"log"
-
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
+	"log"
 )
 
 var settingsWindowInstance fyne.Window
 
+// ShowSettingsWindow открывает или фокусирует окно настроек
 func ShowSettingsWindow(app fyne.App, cfg *config.Config, parent fyne.Window) {
+	log.Println("⚙️ ShowSettingsWindow called")
+
 	if settingsWindowInstance != nil {
+		log.Println("⚙️ Settings window already exists, focusing...")
 		settingsWindowInstance.Show()
 		settingsWindowInstance.RequestFocus()
 		return
 	}
 
+	log.Println("⚙️ Creating new settings window...")
 	settingsWindowInstance = createSettingsWindow(app, cfg, parent)
 	settingsWindowInstance.Show()
 	settingsWindowInstance.RequestFocus()
@@ -34,11 +37,13 @@ func createSettingsWindow(app fyne.App, cfg *config.Config, parent fyne.Window) 
 	win.SetContent(createSettingsContent(cfg, win))
 	win.Resize(fyne.NewSize(500, 400))
 
-	if parent != nil {
-		win.SetOnClosed(func() {
+	win.SetOnClosed(func() {
+		log.Println("⚙️ Settings window closing, resetting instance...")
+		settingsWindowInstance = nil
+		if parent != nil {
 			parent.RequestFocus()
-		})
-	}
+		}
+	})
 
 	log.Println("⚙️ Settings window created")
 	return win
@@ -63,21 +68,25 @@ func createSettingsContent(cfg *config.Config, win fyne.Window) fyne.CanvasObjec
 	})
 	checkUpdates.Checked = cfg.CheckUpdates
 
-	// ✅ Язык — динамический список из AvailableLocales()
+	// ✅ Язык — используем language_name из файлов локалей
 	availableLocales := utils.AvailableLocales()
 	log.Printf("🌐 Available locales: %v", availableLocales)
 
-	// Создаём список названий для отображения
+	// Создаём список отображаемых названий из language_name
 	langOptions := make([]string, len(availableLocales))
 	for i, localeInfo := range availableLocales {
-		langOptions[i] = localeInfo.Name
+		// ✅ Получаем language_name из файла локали
+		fullInfo := utils.GetLocaleInfo(localeInfo.Code)
+		langOptions[i] = fullInfo.Name
+		log.Printf("🌐 Locale %s: %s", localeInfo.Code, fullInfo.Name)
 	}
 
 	langSelect := widget.NewSelect(langOptions, func(value string) {
-		// Находим код локали по названию
+		// Находим код локали по отображаемому названию
 		var newLang string
 		for _, localeInfo := range availableLocales {
-			if localeInfo.Name == value {
+			fullInfo := utils.GetLocaleInfo(localeInfo.Code)
+			if fullInfo.Name == value {
 				newLang = localeInfo.Code
 				break
 			}
@@ -98,12 +107,9 @@ func createSettingsContent(cfg *config.Config, win fyne.Window) fyne.CanvasObjec
 	})
 
 	// Установка текущего значения
-	for _, localeInfo := range availableLocales {
-		if localeInfo.Code == cfg.Language {
-			langSelect.SetSelected(localeInfo.Name)
-			break
-		}
-	}
+	currentLangInfo := utils.GetLocaleInfo(cfg.Language)
+	langSelect.SetSelected(currentLangInfo.Name)
+	log.Printf("🌐 Current language: %s (%s)", cfg.Language, currentLangInfo.Name)
 
 	// Уровень логирования
 	logLevelSelect := widget.NewSelect([]string{"debug", "info", "warn", "error"}, func(value string) {
@@ -140,16 +146,11 @@ func createSettingsContent(cfg *config.Config, win fyne.Window) fyne.CanvasObjec
 					autoStart.Refresh()
 					checkUpdates.Checked = cfg.CheckUpdates
 					checkUpdates.Refresh()
+					logLevelSelect.SetSelected(cfg.LogLevel)
 
 					// Обновляем выбор языка
-					for _, localeInfo := range availableLocales {
-						if localeInfo.Code == cfg.Language {
-							langSelect.SetSelected(localeInfo.Name)
-							break
-						}
-					}
-
-					logLevelSelect.SetSelected(cfg.LogLevel)
+					currentLangInfo := utils.GetLocaleInfo(cfg.Language)
+					langSelect.SetSelected(currentLangInfo.Name)
 
 					dialog.ShowInformation(
 						loc.Get("settings.notification.title"),
