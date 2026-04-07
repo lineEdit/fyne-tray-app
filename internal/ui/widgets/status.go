@@ -29,9 +29,6 @@ func NewStatusWidget(cfg *config.Config) *StatusWidget {
 	}
 	w.ExtendBaseWidget(w)
 
-	// ✅ НЕ запускайте горутины здесь!
-	// Если нужно обновление — делайте это через Refresh() по событию
-
 	return w
 }
 

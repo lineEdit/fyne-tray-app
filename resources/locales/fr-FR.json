@@ -1,0 +1,41 @@
+{
+  "app.name": "Tray App",
+  "app.version": "v1.0.0",
+  "language_name": "Français",
+
+  "tray.title": "Tray App",
+  "tray.tooltip": "Cliquez pour le menu",
+  "tray.menu.show": "Afficher la fenêtre",
+  "tray.menu.exit": "Quitter",
+
+  "window.title": "Tray App",
+  "window.btn.hide": "Masquer",
+  "window.btn.settings": "Paramètres",
+
+  "status.label": "État de l'application",
+  "status.active": "Actif",
+  "status.inactive": "Inactif",
+  "status.unknown": "Inconnu",
+
+  "settings.title": "Paramètres",
+  "settings.auto_start": "Démarrage automatique",
+  "settings.check_updates": "Vérifier les mises à jour",
+  "settings.language": "Langue",
+  "settings.log_level": "Niveau de journalisation",
+  "settings.btn.save": "Appliquer",
+  "settings.notification.title": "Paramètres",
+  "settings.notification.saved": "Enregistré",
+
+  "notify.update.available": "Mise à jour disponible",
+  "notify.update.ready": "Mise à jour prête à installer",
+  "notify.error.title": "Erreur",
+  "notify.error.message": "Une erreur s'est produite",
+
+  "settings.window.title": "Paramètres",
+  "settings.menu": "Paramètres",
+  "settings.language.restart_required": "Redémarrage de l'application requis pour appliquer la langue",
+  "settings.btn.reset": "Réinitialiser",
+  "settings.btn.close": "Fermer",
+  "settings.reset.confirm": "Êtes-vous sûr de vouloir réinitialiser tous les paramètres par défaut ?",
+  "settings.notification.reset": "Paramètres réinitialisés"
+}

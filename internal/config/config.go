@@ -29,25 +29,12 @@ type Config struct {
 	Dirty  bool `json:"-"` // Нужно ли сохранять
 }
 
-//var (
-//	instance *Config
-//	once     sync.Once
-//)
-
 // markDirty помечает конфиг как изменённый
 func (c *Config) markDirty() {
 	c.Mu.Lock()
 	defer c.Mu.Unlock()
 	c.Dirty = true
 }
-
-// Get возвращает глобальный экземпляр конфигурации
-//func Get() *Config {
-//	once.Do(func() {
-//		instance = Load()
-//	})
-//	return instance
-//}
 
 // Default возвращает конфигурацию по умолчанию
 func Default() *Config {

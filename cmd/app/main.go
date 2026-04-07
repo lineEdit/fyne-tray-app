@@ -16,14 +16,13 @@ func main() {
 
 	// Создание приложения
 	application := app.New()
-	log.Println("📦 Application created") // ← Добавьте эту строку!
+	log.Println("📦 Application created")
 
 	// ✅ Запуск (должен блокировать)
-	log.Println("▶️ Calling application.Run()...") // ← Добавьте эту строку!
+	log.Println("▶️ Calling application.Run()...")
 	if err := application.Run(); err != nil {
 		log.Fatalf("Application error: %v", err)
 	}
 
-	// Сюда код не дойдёт (Run блокирует)
 	log.Println("⚠️ application.Run() returned")
 }

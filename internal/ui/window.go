@@ -22,23 +22,6 @@ func CreateMainWindow(app fyne.App, cfg *config.Config) fyne.Window {
 	return window
 }
 
-//func createMainContent(cfg *config.Config) fyne.CanvasObject {
-//	loc := utils.GetLocale()
-//
-//	// ✅ Минимальный контент для теста
-//	return container.NewVBox(
-//		widget.NewLabel(loc.Get("app.name")),
-//		widget.NewLabel("Тест: если видите это — окно работает"),
-//		widget.NewButton("Закрыть", func() {
-//			fyne.CurrentApp().Quit()
-//		}),
-//	)
-//
-//	// ❌ Закомментируйте виджеты для теста:
-//	// statusWidget := widgets.NewStatusWidget(cfg)
-//	// settingsWidget := widgets.NewSettingsWidget(cfg)
-//}
-
 func createMainContent(cfg *config.Config) fyne.CanvasObject {
 	loc := utils.GetLocale()
 
