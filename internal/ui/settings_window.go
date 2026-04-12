@@ -4,11 +4,13 @@ package ui
 import (
 	"fyne-tray-app/internal/config"
 	"fyne-tray-app/internal/utils"
+	"log"
+	"strings"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
-	"log"
 )
 
 var settingsWindowInstance fyne.Window
@@ -72,44 +74,80 @@ func createSettingsContent(cfg *config.Config, win fyne.Window) fyne.CanvasObjec
 	availableLocales := utils.AvailableLocales()
 	log.Printf("🌐 Available locales: %v", availableLocales)
 
-	// Создаём список отображаемых названий из language_name
-	langOptions := make([]string, len(availableLocales))
-	for i, localeInfo := range availableLocales {
-		// ✅ Получаем language_name из файла локали
+	// Создаём мапу: код → отображаемое имя (для заполнения ComboBox)
+	localeToName := make(map[string]string)
+	for _, localeInfo := range availableLocales {
 		fullInfo := utils.GetLocaleInfo(localeInfo.Code)
-		langOptions[i] = fullInfo.Name
+		localeToName[localeInfo.Code] = fullInfo.Name
 		log.Printf("🌐 Locale %s: %s", localeInfo.Code, fullInfo.Name)
 	}
 
+	// Создаём список для ComboBox
+	langOptions := make([]string, 0, len(localeToName))
+	for _, name := range localeToName {
+		langOptions = append(langOptions, name)
+	}
+
 	langSelect := widget.NewSelect(langOptions, func(value string) {
-		// Находим код локали по отображаемому названию
+		log.Printf("🌐 ComboBox value selected: [%s]", value)
+
+		// ✅ Надёжный поиск: сравниваем с триммингом и в нижнем регистре
 		var newLang string
-		for _, localeInfo := range availableLocales {
-			fullInfo := utils.GetLocaleInfo(localeInfo.Code)
-			if fullInfo.Name == value {
-				newLang = localeInfo.Code
+		selectedTrimmed := strings.TrimSpace(strings.ToLower(value))
+
+		for code, name := range localeToName {
+			nameTrimmed := strings.TrimSpace(strings.ToLower(name))
+			log.Printf("🌐 Comparing: [%s] == [%s] ?", selectedTrimmed, nameTrimmed)
+
+			if selectedTrimmed == nameTrimmed {
+				newLang = code
+				log.Printf("🌐 Match found: %s", newLang)
 				break
+			}
+		}
+
+		if newLang == "" {
+			log.Printf("⚠️ No match found for: [%s]", value)
+			// Fallback: ищем точное совпадение без нормализации
+			for code, name := range localeToName {
+				if name == value {
+					newLang = code
+					log.Printf("🌐 Fallback match: %s", newLang)
+					break
+				}
 			}
 		}
 
 		log.Printf("🌐 Language selected: %s (%s)", value, newLang)
 
-		if newLang != "" && cfg.SetLanguage(newLang) {
-			_ = utils.GetLocale().SetLocale(newLang)
-			_ = cfg.Save()
+		// ✅ Сохраняем ТОЛЬКО если язык действительно изменился
+		if newLang != "" && newLang != cfg.Language {
+			if cfg.SetLanguage(newLang) {
+				_ = utils.GetLocale().SetLocale(newLang)
+				_ = cfg.Save()
+				log.Printf("💾 Language saved: %s", newLang)
 
-			dialog.ShowInformation(
-				loc.Get("settings.language"),
-				loc.Get("settings.language.restart_required"),
-				win,
-			)
+				dialog.ShowInformation(
+					loc.Get("settings.language"),
+					loc.Get("settings.language.restart_required"),
+					win,
+				)
+			}
+		} else if newLang == cfg.Language {
+			log.Printf("ℹ️ Language already set to: %s", newLang)
+		} else if newLang == "" {
+			log.Printf("❌ Could not determine locale code")
 		}
 	})
 
 	// Установка текущего значения
-	currentLangInfo := utils.GetLocaleInfo(cfg.Language)
-	langSelect.SetSelected(currentLangInfo.Name)
-	log.Printf("🌐 Current language: %s (%s)", cfg.Language, currentLangInfo.Name)
+	currentName := localeToName[cfg.Language]
+	if currentName == "" {
+		// Fallback если имя не найдено
+		currentName = cfg.Language
+	}
+	langSelect.SetSelected(currentName)
+	log.Printf("🌐 ComboBox initialized with: %s (%s)", cfg.Language, currentName)
 
 	// Уровень логирования
 	logLevelSelect := widget.NewSelect([]string{"debug", "info", "warn", "error"}, func(value string) {

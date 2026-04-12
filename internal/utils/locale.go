@@ -210,6 +210,48 @@ func AvailableLocales() []LocaleInfo {
 	return locales
 }
 
+// В начало файла, после переменных:
+var localeInfoCache sync.Map // map[string]LocaleInfo
+
+// Обновите GetLocaleInfo:
+func GetLocaleInfo(localeCode string) LocaleInfo {
+	// ✅ Проверяем кэш
+	if cached, ok := localeInfoCache.Load(localeCode); ok {
+		return cached.(LocaleInfo)
+	}
+
+	info := LocaleInfo{
+		Code: localeCode,
+		Name: localeCode,
+	}
+
+	searchPaths := []string{"resources/locales"}
+	if execPath, err := os.Executable(); err == nil {
+		execDir := filepath.Dir(execPath)
+		searchPaths = append(searchPaths, filepath.Join(execDir, "resources", "locales"))
+	}
+
+	for _, basePath := range searchPaths {
+		filePath := filepath.Join(basePath, fmt.Sprintf("%s.json", localeCode))
+		data, err := os.ReadFile(filePath)
+		if err == nil {
+			var localeData map[string]interface{}
+			if err := json.Unmarshal(data, &localeData); err == nil {
+				if nameVal, ok := localeData["language_name"]; ok {
+					if strVal, ok := nameVal.(string); ok && strVal != "" {
+						info.Name = strVal
+						break
+					}
+				}
+			}
+		}
+	}
+
+	// ✅ Сохраняем в кэш
+	localeInfoCache.Store(localeCode, info)
+	return info
+}
+
 func isValidLocaleCode(code string) bool {
 	if len(code) < 2 {
 		return false
